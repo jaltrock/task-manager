@@ -1,28 +1,27 @@
 import React from "react";
-import { ListGroup, Button, FormCheck } from "react-bootstrap";
+import "../App.css"; 
 
-const TaskItem = ({ task, deleteTask, toggleComplete }) => {
+import { FaCheckCircle, FaTrashAlt } from "react-icons/fa";
+
+const TaskItem = ({ task, deleteTask, toggleComplete, column }) => {
   return (
-    <ListGroup.Item>
-      <FormCheck
-        type="checkbox"
-        checked={task.completed}
-        onChange={() => toggleComplete(task.id)}
-        label={task.text}
-        style={{
-          textDecoration: task.completed ? "line-through" : "none",
-        }}
-      />
-      <span className="ml-3">{task.category}</span>
-      <Button
-        variant="danger"
-        size="sm"
-        className="float-right"
-        onClick={() => deleteTask(task.id)}
-      >
-        Delete
-      </Button>
-    </ListGroup.Item>
+    <div className={`task-card ${column}`}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <p style={{ textDecoration: task.completed ? "line-through" : "none" }}>
+          {task.text}
+        </p>
+        <div>
+          <FaCheckCircle
+            onClick={() => toggleComplete(task.id)}
+            style={{ color: "#28a745", marginRight: "0.5rem", cursor: "pointer" }}
+          />
+          <FaTrashAlt
+            onClick={() => deleteTask(task.id)}
+            style={{ color: "#dc3545", cursor: "pointer" }}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 

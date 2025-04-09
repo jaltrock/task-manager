@@ -1,60 +1,54 @@
 import React, { useState } from "react";
-import { Form, Button, Col, Row } from "react-bootstrap";
+import "../App.css";
 
 const TaskForm = ({ addTask }) => {
-  const [taskText, setTaskText] = useState("");
-  const [category, setCategory] = useState("work");
+  const [text, setText] = useState("");
+  const [status, setStatus] = useState("to-do");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (taskText.trim()) {
-      const newTask = {
-        id: Date.now(),
-        text: taskText,
-        category: category,
-        completed: false,
-      };
-      addTask(newTask);
-      setTaskText("");
+
+    if (!text.trim()) {
+      alert("Please enter a task.");
+      return;
     }
+
+    const newTask = {
+      id: Date.now(),
+      text,
+      completed: false,
+      status,
+    };
+
+    addTask(newTask); // 👈 This must be defined and working
+    setText("");
+    setStatus("to-do");
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Form.Group as={Row}>
-        <Form.Label column sm={2}>
-          Task
-        </Form.Label>
-        <Col sm={10}>
-          <Form.Control
-            type="text"
-            placeholder="Enter your task"
-            value={taskText}
-            onChange={(e) => setTaskText(e.target.value)}
-          />
-        </Col>
-      </Form.Group>
+    <form className="task-form-container" onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Enter a new task..."
+        className="task-input"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
 
-      <Form.Group as={Row}>
-        <Form.Label column sm={2}>
-          Category
-        </Form.Label>
-        <Col sm={10}>
-          <Form.Control
-            as="select"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="work">Work</option>
-            <option value="personal">Personal</option>
-          </Form.Control>
-        </Col>
-      </Form.Group>
+      <select
+        className="task-select"
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+      >
+        <option value="to-do">To Do</option>
+        <option value="in-progress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
 
-      <Button variant="primary" type="submit">
-        Add Task
-      </Button>
-    </Form>
+      <button type="submit" className="add-task-btn">
+        + Add Task
+      </button>
+    </form>
   );
 };
 

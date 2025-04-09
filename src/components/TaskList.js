@@ -1,19 +1,40 @@
 import React from "react";
 import TaskItem from "./TaskItem";
-import { ListGroup } from "react-bootstrap";
+import { Draggable } from "@hello-pangea/dnd";
 
-const TaskList = ({ tasks, deleteTask, toggleComplete }) => {
+const TaskList = ({
+  tasks,
+  deleteTask,
+  toggleComplete,
+  column,
+  droppableProvided,
+}) => {
   return (
-    <ListGroup>
-      {tasks.map((task) => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          deleteTask={deleteTask}
-          toggleComplete={toggleComplete}
-        />
+    <div ref={droppableProvided.innerRef} {...droppableProvided.droppableProps}>
+      {tasks.map((task, index) => (
+        <Draggable
+          key={task.id.toString()}
+          draggableId={task.id.toString()}
+          index={index}
+        >
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+            >
+              <TaskItem
+                task={task}
+                deleteTask={deleteTask}
+                toggleComplete={toggleComplete}
+                column={column}
+              />
+            </div>
+          )}
+        </Draggable>
       ))}
-    </ListGroup>
+      {droppableProvided.placeholder}
+    </div>
   );
 };
 
