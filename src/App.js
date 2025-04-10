@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import TaskList from "./components/TaskList";
 import TaskForm from "./components/TaskForm";
-import "./App.css";
+import TaskList from "./components/TaskList";
 import {
   DragDropContext,
   Droppable,
-  Draggable,
 } from "@hello-pangea/dnd";
-
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import "./App.css";
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
@@ -24,9 +24,34 @@ const App = () => {
   };
 
   const deleteTask = (id) => {
+    const taskToDelete = tasks.find((task) => task.id === id);
+    if (!taskToDelete) return;
+
+    const confirmed = window.confirm(`Are you sure you want to delete "${taskToDelete.text}"?`);
+    if (!confirmed) return;
+
     const newTasks = tasks.filter((task) => task.id !== id);
     setTasks(newTasks);
     localStorage.setItem("tasks", JSON.stringify(newTasks));
+
+    toast.success(
+      <>
+        Task deleted —{" "}
+        <span
+          style={{ textDecoration: "underline", cursor: "pointer" }}
+          onClick={() => undoDelete(taskToDelete)}
+        >
+          Undo
+        </span>
+      </>,
+      { autoClose: 4000 }
+    );
+  };
+
+  const undoDelete = (task) => {
+    const updatedTasks = [...tasks, task];
+    setTasks(updatedTasks);
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
   };
 
   const toggleComplete = (id) => {
@@ -36,53 +61,43 @@ const App = () => {
         return {
           ...task,
           completed: isNowComplete,
-          status: isNowComplete ? "done" : "to-do", // or "in-progress" if you prefer to track it differently
+          status: isNowComplete ? "done" : "to-do",
         };
       }
       return task;
     });
-  
+
     setTasks(updatedTasks);
     localStorage.setItem("tasks", JSON.stringify(updatedTasks));
   };
-  
 
   const onDragEnd = (result) => {
     const { destination, source, draggableId } = result;
-  
+
     if (!destination) return;
-  
+
     const sourceCol = source.droppableId;
     const destCol = destination.droppableId;
-  
-    // Get tasks grouped by status
+
     const tasksByStatus = {
       "to-do": tasks.filter((t) => t.status === "to-do"),
       "in-progress": tasks.filter((t) => t.status === "in-progress"),
       done: tasks.filter((t) => t.status === "done"),
     };
-  
-    // Remove the dragged task from the source list
-    const draggedTaskIndex = source.index;
-    const [movedTask] = tasksByStatus[sourceCol].splice(draggedTaskIndex, 1);
-  
-    // Update the status if dropped into a new column
+
+    const [movedTask] = tasksByStatus[sourceCol].splice(source.index, 1);
     movedTask.status = destCol;
-  
-    // Insert into new position
     tasksByStatus[destCol].splice(destination.index, 0, movedTask);
-  
-    // Flatten the updated grouped tasks into a single array
+
     const updatedTasks = [
       ...tasksByStatus["to-do"],
       ...tasksByStatus["in-progress"],
       ...tasksByStatus["done"],
     ];
-  
+
     setTasks(updatedTasks);
     localStorage.setItem("tasks", JSON.stringify(updatedTasks));
   };
-  
 
   return (
     <div className="app-container">
@@ -97,7 +112,7 @@ const App = () => {
         </ul>
       </aside>
 
-      {/* Main Board */}
+      {/* Main Content */}
       <div style={{ flex: 1 }}>
         <TaskForm addTask={addTask} />
 
@@ -105,9 +120,11 @@ const App = () => {
           <div className="task-board">
             {["to-do", "in-progress", "done"].map((status) => (
               <Droppable droppableId={status} key={status}>
-                {(provided) => (
+                {(provided, snapshot) => (
                   <div
-                    className="task-column"
+                    className={`task-column ${status} ${
+                      snapshot.isDraggingOver ? "drag-over" : ""
+                    }`}
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                   >
@@ -126,6 +143,9 @@ const App = () => {
           </div>
         </DragDropContext>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer position="bottom-left" autoClose={4000} />
     </div>
   );
 };
